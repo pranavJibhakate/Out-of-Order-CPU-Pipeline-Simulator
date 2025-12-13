@@ -281,7 +281,7 @@ class Simulator {
   }
 
   cycle() {
-    debugger;
+    // debugger;
     this.retire();
     this.writeBack();
     this.execute();
@@ -396,6 +396,9 @@ function PipelineDiagram({ sim }) {
     </div>
   );
 }
+// import { useState, useEffect } from "react";
+// import Simulator from "./Simulator";
+// import "./App.css";
 
 function ROBTable({ rob }) {
   const getROBEntries = () => {
@@ -419,56 +422,40 @@ function ROBTable({ rob }) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 mb-6">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">
-        Reorder Buffer (ROB)
-      </h2>
-      <div className="overflow-x-auto">
-        <table className="w-full">
+    <div className="component-card rob-card">
+      <h2 className="component-title">Reorder Buffer (ROB)</h2>
+      <div className="table-container">
+        <table className="data-table">
           <thead>
-            <tr className="bg-gray-50">
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                ROB Index
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Inst Index
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Dest Reg
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                PC
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Ready
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Head/Tail
-              </th>
+            <tr className="table-header">
+              <th className="table-header-cell">ROB Index</th>
+              <th className="table-header-cell">Inst Index</th>
+              <th className="table-header-cell">Dest Reg</th>
+              <th className="table-header-cell">PC</th>
+              <th className="table-header-cell">Ready</th>
+              <th className="table-header-cell">Head/Tail</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="table-body">
             {getROBEntries().map(({ index, entry }) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="px-4 py-3 border text-sm font-mono">{index}</td>
-                <td className="px-4 py-3 border text-sm font-semibold">
+              <tr key={index} className="table-row">
+                <td className="table-cell monospace">{index}</td>
+                <td className="table-cell bold">
                   {entry.inst ? `I${entry.inst.indx}` : "—"}
                 </td>
-                <td className="px-4 py-3 border text-sm">R{entry.dst}</td>
-                <td className="px-4 py-3 border text-sm font-mono">
+                <td className="table-cell">R{entry.dst}</td>
+                <td className="table-cell monospace">
                   0x{entry.inst?.pc?.toString(16)?.padStart(4, "0") || "0000"}
                 </td>
-                <td className="px-4 py-3 border">
+                <td className="table-cell">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      entry.rdy
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                    className={`badge ${
+                      entry.rdy ? "badge-ready" : "badge-not-ready"
                     }`}>
                     {entry.rdy ? "Ready" : "Not Ready"}
                   </span>
                 </td>
-                <td className="px-4 py-3 border text-sm">
+                <td className="table-cell">
                   {index === rob.s && index === rob.e
                     ? "Head & Tail"
                     : index === rob.s
@@ -481,9 +468,7 @@ function ROBTable({ rob }) {
             ))}
             {rob.empty() && (
               <tr>
-                <td
-                  colSpan="6"
-                  className="px-4 py-8 text-center text-gray-500 border">
+                <td colSpan="6" className="table-cell empty-message">
                   ROB is empty
                 </td>
               </tr>
@@ -491,12 +476,22 @@ function ROBTable({ rob }) {
           </tbody>
         </table>
       </div>
-      <div className="mt-4 text-sm text-gray-600">
-        <div className="flex gap-4">
-          <span>Head (s): {rob.s}</span>
-          <span>Tail (e): {rob.e}</span>
-          <span>Full: {rob.full() ? "Yes" : "No"}</span>
-          <span>Empty: {rob.empty() ? "Yes" : "No"}</span>
+      <div className="component-status">
+        <div className="status-item">
+          <span className="status-label">Head (s):</span>
+          <span className="status-value">{rob.s}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">Tail (e):</span>
+          <span className="status-value">{rob.e}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">Full:</span>
+          <span className="status-value">{rob.full() ? "Yes" : "No"}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">Empty:</span>
+          <span className="status-value">{rob.empty() ? "Yes" : "No"}</span>
         </div>
       </div>
     </div>
@@ -505,66 +500,48 @@ function ROBTable({ rob }) {
 
 function IssueQueueTable({ iq }) {
   return (
-    <div className="bg-white rounded-xl shadow p-4 mb-6">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">Issue Queue (IQ)</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full">
+    <div className="component-card iq-card">
+      <h2 className="component-title">Issue Queue (IQ)</h2>
+      <div className="table-container">
+        <table className="data-table">
           <thead>
-            <tr className="bg-gray-50">
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                IQ Slot
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Inst Index
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Dest Reg
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Src1 Ready
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Src2 Ready
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Issue Ready
-              </th>
+            <tr className="table-header">
+              <th className="table-header-cell">IQ Slot</th>
+              <th className="table-header-cell">Inst Index</th>
+              <th className="table-header-cell">Dest Reg</th>
+              <th className="table-header-cell">Src1 Ready</th>
+              <th className="table-header-cell">Src2 Ready</th>
+              <th className="table-header-cell">Issue Ready</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="table-body">
             {iq.entries.map((entry, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="px-4 py-3 border text-sm font-mono">{index}</td>
-                <td className="px-4 py-3 border text-sm font-semibold">
-                  I{entry.inst.indx}
-                </td>
-                <td className="px-4 py-3 border text-sm">R{entry.dst}</td>
-                <td className="px-4 py-3 border">
+              <tr key={index} className="table-row">
+                <td className="table-cell monospace">{index}</td>
+                <td className="table-cell bold">I{entry.inst.indx}</td>
+                <td className="table-cell">R{entry.dst}</td>
+                <td className="table-cell">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      entry.rdySrc1
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                    className={`badge ${
+                      entry.rdySrc1 ? "badge-success" : "badge-error"
                     }`}>
                     {entry.rdySrc1 ? "✓" : "✗"}
                   </span>
                 </td>
-                <td className="px-4 py-3 border">
+                <td className="table-cell">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      entry.rdySrc2
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                    className={`badge ${
+                      entry.rdySrc2 ? "badge-success" : "badge-error"
                     }`}>
                     {entry.rdySrc2 ? "✓" : "✗"}
                   </span>
                 </td>
-                <td className="px-4 py-3 border">
+                <td className="table-cell">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    className={`badge ${
                       entry.rdySrc1 && entry.rdySrc2
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
+                        ? "badge-ready"
+                        : "badge-warning"
                     }`}>
                     {entry.rdySrc1 && entry.rdySrc2 ? "Ready" : "Waiting"}
                   </span>
@@ -573,9 +550,7 @@ function IssueQueueTable({ iq }) {
             ))}
             {iq.entries.length === 0 && (
               <tr>
-                <td
-                  colSpan="6"
-                  className="px-4 py-8 text-center text-gray-500 border">
+                <td colSpan="6" className="table-cell empty-message">
                   Issue Queue is empty
                 </td>
               </tr>
@@ -583,12 +558,22 @@ function IssueQueueTable({ iq }) {
           </tbody>
         </table>
       </div>
-      <div className="mt-4 text-sm text-gray-600">
-        <div className="flex gap-4">
-          <span>Size: {iq.size}</span>
-          <span>Used: {iq.entries.length}</span>
-          <span>Free: {iq.freeSize()}</span>
-          <span>Issue Width: {iq.width}</span>
+      <div className="component-status">
+        <div className="status-item">
+          <span className="status-label">Size:</span>
+          <span className="status-value">{iq.size}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">Used:</span>
+          <span className="status-value">{iq.entries.length}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">Free:</span>
+          <span className="status-value">{iq.freeSize()}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">Issue Width:</span>
+          <span className="status-value">{iq.width}</span>
         </div>
       </div>
     </div>
@@ -597,52 +582,38 @@ function IssueQueueTable({ iq }) {
 
 function RMTTable({ rmt }) {
   return (
-    <div className="bg-white rounded-xl shadow p-4 mb-6">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">
-        Register Map Table (RMT)
-      </h2>
-      <div className="overflow-x-auto">
-        <table className="w-full">
+    <div className="component-card rmt-card">
+      <h2 className="component-title">Register Map Table (RMT)</h2>
+      <div className="table-container">
+        <table className="data-table">
           <thead>
-            <tr className="bg-gray-50">
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Architectural Register
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Maps to ROB Entry
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Ready
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
-                Instruction
-              </th>
+            <tr className="table-header">
+              <th className="table-header-cell">Architectural Register</th>
+              <th className="table-header-cell">Maps to ROB Entry</th>
+              <th className="table-header-cell">Ready</th>
+              <th className="table-header-cell">Instruction</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="table-body">
             {rmt.table.map(
               (robEntry, archReg) =>
                 robEntry && (
-                  <tr key={archReg} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border text-sm font-semibold">
-                      R{archReg}
-                    </td>
-                    <td className="px-4 py-3 border text-sm">
+                  <tr key={archReg} className="table-row">
+                    <td className="table-cell bold">R{archReg}</td>
+                    <td className="table-cell">
                       {robEntry.dst !== undefined
                         ? `ROB[${robEntry.dst}]`
                         : "—"}
                     </td>
-                    <td className="px-4 py-3 border">
+                    <td className="table-cell">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          robEntry.rdy
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                        className={`badge ${
+                          robEntry.rdy ? "badge-ready" : "badge-not-ready"
                         }`}>
                         {robEntry.rdy ? "Ready" : "Not Ready"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 border text-sm">
+                    <td className="table-cell">
                       {robEntry.inst ? `I${robEntry.inst.indx}` : "—"}
                     </td>
                   </tr>
@@ -650,9 +621,7 @@ function RMTTable({ rmt }) {
             )}
             {rmt.table.every((entry) => !entry) && (
               <tr>
-                <td
-                  colSpan="4"
-                  className="px-4 py-8 text-center text-gray-500 border">
+                <td colSpan="4" className="table-cell empty-message">
                   RMT is empty (no register mappings)
                 </td>
               </tr>
@@ -660,8 +629,11 @@ function RMTTable({ rmt }) {
           </tbody>
         </table>
       </div>
-      <div className="mt-4 text-sm text-gray-600">
-        <span>Total Registers: {rmt.size}</span>
+      <div className="component-status">
+        <div className="status-item">
+          <span className="status-label">Total Registers:</span>
+          <span className="status-value">{rmt.size}</span>
+        </div>
       </div>
     </div>
   );
@@ -684,23 +656,14 @@ function ActiveStages({ sim }) {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 mb-6">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">
-        Active Pipeline Stages
-      </h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="component-card stages-card">
+      <h2 className="component-title">Active Pipeline Stages</h2>
+      <div className="stages-grid">
         {stageData.map((stage, idx) => (
-          <div
-            key={idx}
-            className="border rounded-lg p-4 text-center hover:shadow-md transition-shadow">
-            <div className="text-sm font-medium text-gray-600 mb-1">
-              {stage.name}
-            </div>
-            <div className="text-2xl font-bold text-blue-600 mb-2">
-              {stage.count}
-            </div>
-            <div className="text-xs text-gray-500">
-              Instructions:{" "}
+          <div key={idx} className="stage-card">
+            <div className="stage-name">{stage.name}</div>
+            <div className="stage-count">{stage.count}</div>
+            <div className="stage-instructions">
               {stage.bundle.map((inst) => `I${inst.indx}`).join(", ") || "None"}
             </div>
           </div>
@@ -730,90 +693,68 @@ export default function App() {
   };
 
   const handleReset = () => {
-    const newSim = new Simulator(8, 8, 1);
-    const trace = [];
-    // for (let i = 0; i < 32; i++) {
-    //   trace.push(new Instruction(i * 4, 0, i % 8, (i + 1) % 8, (i + 2) % 8, i));
-    // }
-    trace.push(new Instruction(0, 0, 1, 2, 3, 0));
-    trace.push(new Instruction(4, 0, 1, 2, 3, 1));
-    trace.push(new Instruction(8, 0, 1, 2, 3, 2));
-    newSim.loadTrace(trace);
-    window.location.reload(); // Quick reset
+    window.location.reload();
+  };
+
+  const runCycles = (count) => {
+    for (let i = 0; i < count; i++) sim.cycle();
+    forceUpdate((x) => x + 1);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Out-of-Order Pipeline Simulator
-          </h1>
-          <p className="text-gray-600">
-            Cycle: {sim.cycleNo} | Instructions Remaining: {sim.trace.length}
+    <div className="simulator-app">
+      <div className="simulator-container">
+        <header className="app-header">
+          <h1 className="app-title">Out-of-Order Pipeline Simulator</h1>
+          <p className="app-subtitle">
+            Cycle: <span className="cycle-number">{sim.cycleNo}</span> |
+            Instructions Remaining:{" "}
+            <span className="instructions-remaining">{sim.trace.length}</span>
           </p>
         </header>
 
-        <div className="flex flex-wrap gap-4 mb-6">
-          <button
-            onClick={handleCycle}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition-colors">
+        <div className="control-panel">
+          <button onClick={handleCycle} className="btn btn-primary">
             Advance Cycle ({sim.width} instructions/cycle)
           </button>
-          <button
-            onClick={handleReset}
-            className="px-6 py-3 bg-gray-600 text-white font-medium rounded-lg shadow hover:bg-gray-700 transition-colors">
+          <button onClick={handleReset} className="btn btn-secondary">
             Reset Simulator
           </button>
-          <button
-            onClick={() => {
-              for (let i = 0; i < 5; i++) sim.cycle();
-              forceUpdate((x) => x + 1);
-            }}
-            className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg shadow hover:bg-green-700 transition-colors">
+          <button onClick={() => runCycles(5)} className="btn btn-success">
             Run 5 Cycles
+          </button>
+          <button onClick={() => runCycles(10)} className="btn btn-warning">
+            Run 10 Cycles
           </button>
         </div>
 
-        {/* <PipelineDiagram sim={sim} /> */}
-
         <ActiveStages sim={sim} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="main-grid">
           <ROBTable rob={sim.rob} />
           <IssueQueueTable iq={sim.iq} />
         </div>
 
         <RMTTable rmt={sim.rmt} />
 
-        <div className="bg-white rounded-xl shadow p-6 mt-8">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">
-            Simulator Configuration
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="border rounded-lg p-4">
-              <div className="text-sm text-gray-600">ROB Size</div>
-              <div className="text-lg font-semibold">
-                {sim.rob.size} entries
-              </div>
+        <div className="component-card config-card">
+          <h2 className="component-title">Simulator Configuration</h2>
+          <div className="config-grid">
+            <div className="config-item">
+              <div className="config-label">ROB Size</div>
+              <div className="config-value">{sim.rob.size} entries</div>
             </div>
-            <div className="border rounded-lg p-4">
-              <div className="text-sm text-gray-600">IQ Size</div>
-              <div className="text-lg font-semibold">{sim.iq.size} entries</div>
+            <div className="config-item">
+              <div className="config-label">IQ Size</div>
+              <div className="config-value">{sim.iq.size} entries</div>
             </div>
-            <div className="border rounded-lg p-4">
-              <div className="text-sm text-gray-600">Issue Width</div>
-              <div className="text-lg font-semibold">
-                {sim.width} instructions/cycle
-              </div>
+            <div className="config-item">
+              <div className="config-label">Issue Width</div>
+              <div className="config-value">{sim.width} instructions/cycle</div>
             </div>
-            <div className="border rounded-lg p-4">
-              <div className="text-sm text-gray-600">
-                Architectural Registers
-              </div>
-              <div className="text-lg font-semibold">
-                {sim.rmt.size} registers
-              </div>
+            <div className="config-item">
+              <div className="config-label">Architectural Registers</div>
+              <div className="config-value">{sim.rmt.size} registers</div>
             </div>
           </div>
         </div>
