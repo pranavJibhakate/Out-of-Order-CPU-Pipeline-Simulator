@@ -277,8 +277,55 @@ function ActiveStages({ sim }) {
   );
 }
 
+function TraceInput({ sim, onLoad }) {
+  const [text, setText] = useState("");
+  const [error, setError] = useState("");
+
+  const parseAndLoad = () => {
+    try {
+      const lines = text.split("\n").filter((l) => l.trim() !== "");
+      const trace = lines.map((line, idx) => {
+        const parts = line.trim().split(/\s+/).map(Number);
+        if (parts.length !== 5 || parts.some(isNaN)) {
+          throw new Error(`Invalid format on line ${idx + 1}`);
+        }
+        const [pc, opcode, dst, src1, src2] = parts;
+        return new Instruction(pc, opcode, dst, src1, src2, idx);
+      });
+
+      sim.reset();
+      sim.loadTrace(trace);
+      onLoad();
+      setError("");
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  return (
+    <div className="component-card trace-card">
+      <h2 className="component-title">Trace Input</h2>
+
+      <textarea
+        className="trace-textarea"
+        rows={8}
+        placeholder="pc opcode dst src1 src2"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+
+      {error && <div className="error-text">{error}</div>}
+
+      <button className="btn btn-primary" onClick={parseAndLoad}>
+        Load Trace
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
   const [sim] = useState(() => new Simulator(8, 8, 1));
+  const [activeTab, setActiveTab] = useState("sim");
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
@@ -300,7 +347,7 @@ export default function App() {
   };
 
   const handleReset = () => {
-    window.location.reload();
+    sim.reset();
   };
 
   const runCycles = (count) => {
@@ -316,6 +363,19 @@ export default function App() {
         </header>
 
         <div className="control-panel-parent">
+          <div className="tab-bar">
+            <button
+              className={activeTab === "sim" ? "tab active" : "tab"}
+              onClick={() => setActiveTab("sim")}>
+              Simulator
+            </button>
+            <button
+              className={activeTab === "trace" ? "tab active" : "tab"}
+              onClick={() => setActiveTab("trace")}>
+              Trace Input
+            </button>
+          </div>
+
           <div className="control-panel">
             <button onClick={handleCycle} className="btn btn-primary">
               Advance Cycle ({sim.width} instructions/cycle)
@@ -337,39 +397,46 @@ export default function App() {
           </p>
         </div>
 
-        <div className="panels-grid">
-          <ActiveStages sim={sim} />
-          <div className="panels-grid-second-col">
-            <div className="main-grid">
-              <ROBTable rob={sim.rob} />
-              <IssueQueueTable iq={sim.iq} />
+        {activeTab === "trace" ? (
+          <TraceInput sim={sim} onLoad={() => forceUpdate((x) => x + 1)} />
+        ) : (
+          <>
+            <div className="panels-grid">
+              <ActiveStages sim={sim} />
+              <div className="panels-grid-second-col">
+                <div className="main-grid">
+                  <ROBTable rob={sim.rob} />
+                  <IssueQueueTable iq={sim.iq} />
+                </div>
+                <RMTTable rmt={sim.rmt} />
+              </div>
             </div>
 
-            <RMTTable rmt={sim.rmt} />
-          </div>
-        </div>
-
-        <div className="component-card config-card">
-          <h2 className="component-title">Simulator Configuration</h2>
-          <div className="config-grid">
-            <div className="config-item">
-              <div className="config-label">ROB Size</div>
-              <div className="config-value">{sim.rob.size} entries</div>
-            </div>
-            <div className="config-item">
-              <div className="config-label">IQ Size</div>
-              <div className="config-value">{sim.iq.size} entries</div>
-            </div>
-            <div className="config-item">
-              <div className="config-label">Issue Width</div>
-              <div className="config-value">{sim.width} instructions/cycle</div>
-            </div>
-            <div className="config-item">
-              <div className="config-label">Architectural Registers</div>
-              <div className="config-value">{sim.rmt.size} registers</div>
-            </div>
-          </div>
-        </div>
+            {/* <div className="component-card config-card">
+              <h2 className="component-title">Simulator Configuration</h2>
+              <div className="config-grid">
+                <div className="config-item">
+                  <div className="config-label">ROB Size</div>
+                  <div className="config-value">{sim.rob.size} entries</div>
+                </div>
+                <div className="config-item">
+                  <div className="config-label">IQ Size</div>
+                  <div className="config-value">{sim.iq.size} entries</div>
+                </div>
+                <div className="config-item">
+                  <div className="config-label">Issue Width</div>
+                  <div className="config-value">
+                    {sim.width} instructions/cycle
+                  </div>
+                </div>
+                <div className="config-item">
+                  <div className="config-label">Architectural Registers</div>
+                  <div className="config-value">{sim.rmt.size} registers</div>
+                </div>
+              </div>
+            </div> */}
+          </>
+        )}
       </div>
     </div>
   );

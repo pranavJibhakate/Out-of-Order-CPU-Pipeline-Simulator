@@ -113,6 +113,13 @@ class ROB {
       }
     }
   }
+
+  reset() {
+    this.entries = Array.from({ length: this.size }, () => new ROBEntry());
+    this.s = 0;
+    this.e = 0;
+    this.isFull = false;
+  }
 }
 
 /********************** IQ Entry ****************************/
@@ -164,6 +171,10 @@ class IQ {
     }
     return issued;
   }
+
+  reset() {
+    this.entries = [];
+  }
 }
 
 /********************** RMT (Register Map Table) ****************************/
@@ -183,6 +194,10 @@ class RMT {
   isValid(archReg) {
     if (archReg === -1) return false;
     return this.table[archReg] !== null;
+  }
+
+  reset() {
+    this.table = Array(this.size).fill(null);
   }
 }
 
@@ -208,6 +223,27 @@ export class Simulator {
 
     this.trace = [];
     this.emptyFile = false;
+  }
+
+  reset() {
+    this.cycleNo = 0;
+    this.instNo = 0;
+    this.emptyFile = false;
+
+    this.trace = [];
+
+    this.rob.reset();
+    this.iq.reset();
+    this.rmt.reset();
+
+    this.execList = [];
+    this.WB = [];
+
+    this.FEb = [];
+    this.DEb = [];
+    this.RNb = [];
+    this.RRb = [];
+    this.DIb = [];
   }
 
   loadTrace(trace) {
