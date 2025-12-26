@@ -18,6 +18,21 @@
                 "1",
                 "./project/trace.txt"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program 2",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/project/main.js",
+            "args": [
+                "8",
+                "8",
+                "1",
+                "./project/trace2.txt"
+            ]
         }
     ]
 }

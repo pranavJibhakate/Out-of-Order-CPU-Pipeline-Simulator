@@ -8,6 +8,11 @@ export class Instruction {
     this.indx = indx;
 
     this.latency = 1;
+    if (opcode === 2) {
+      this.latency = 3;
+    } else if (opcode === 3) {
+      this.latency = 5;
+    }
     this.execTimer = 0;
 
     // Renamed register pointers
@@ -324,6 +329,24 @@ export class Simulator {
       inst.exEnd = this.cycleNo;
       inst.wbBegin = this.cycleNo;
       this.WB.push(inst);
+    }
+
+    for (const inst of finished) {
+      for (const { inst: instWaiting, src: srcType } of inst.rDst.waiting) {
+        if (srcType === 1) {
+          instWaiting.rSrc1 = null;
+          if (instWaiting.iqEntry != null) {
+            instWaiting.iqEntry.rdySrc1 = true;
+          }
+        }
+
+        if (srcType === 2) {
+          instWaiting.rSrc2 = null;
+          if (instWaiting.iqEntry != null) {
+            instWaiting.iqEntry.rdySrc2 = true;
+          }
+        }
+      }
     }
   }
 
