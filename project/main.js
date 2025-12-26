@@ -8,7 +8,7 @@ class ProcParams {
   }
 }
 
-import { Simulator } from "../src/Simulator.js";
+import { Simulator } from "./Simulator.js";
 
 function main() {
   const argv = process.argv;

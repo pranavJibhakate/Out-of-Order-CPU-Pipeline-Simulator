@@ -2,113 +2,7 @@ import React from "react";
 
 import { useState, useEffect } from "react";
 import "./App.css";
-import { Simulator, Instruction } from "./Simulator.js";
-
-/********************** React UI ****************************/
-function PipelineDiagram({ sim }) {
-  const stages = [
-    { name: "Fetch", key: "FEb", color: "bg-blue-100 border-blue-300" },
-    { name: "Decode", key: "DEb", color: "bg-green-100 border-green-300" },
-    { name: "Rename", key: "RNb", color: "bg-yellow-100 border-yellow-300" },
-    {
-      name: "Register Read",
-      key: "RRb",
-      color: "bg-purple-100 border-purple-300",
-    },
-    { name: "Dispatch", key: "DIb", color: "bg-pink-100 border-pink-300" },
-    { name: "Issue", key: "IQ", color: "bg-indigo-100 border-indigo-300" },
-    { name: "Execute", key: "EX", color: "bg-orange-100 border-orange-300" },
-    { name: "Write Back", key: "WB", color: "bg-teal-100 border-teal-300" },
-    { name: "Retire", key: "ROB", color: "bg-red-100 border-red-300" },
-  ];
-
-  // Get instructions for each stage
-  const stageInstructions = stages.map((stage) => {
-    if (stage.key === "IQ") {
-      return sim.iq.entries.map((e) => e.inst);
-    } else if (stage.key === "EX") {
-      return sim.execList;
-    } else if (stage.key === "ROB") {
-      // Show instructions in ROB that are ready to retire
-      const readyInsts = [];
-      if (!sim.rob.empty()) {
-        let i = sim.rob.s;
-        while (true) {
-          const e = sim.rob.entries[i];
-          if (e.inst) readyInsts.push(e.inst);
-          if (i === sim.rob.e && !sim.rob.isFull) break;
-          i = (i + 1) % sim.rob.size;
-          if (sim.rob.isFull && i === sim.rob.e) break;
-        }
-      }
-      return readyInsts;
-    } else {
-      return sim[stage.key] || [];
-    }
-  });
-
-  return (
-    <div className="mb-8">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">Pipeline Diagram</h2>
-      <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
-        <div className="flex flex-col items-center">
-          <div className="text-sm font-semibold text-gray-600 mb-2">Stages</div>
-          <div className="flex flex-col gap-1">
-            {stages.map((stage, idx) => (
-              <div
-                key={stage.name}
-                className="w-32 h-10 flex items-center justify-center text-sm font-medium border-2 rounded"
-                style={{
-                  borderColor:
-                    getComputedStyle(document.documentElement).getPropertyValue(
-                      "--" + stage.color.split("-")[1]
-                    ) || "#000",
-                }}>
-                {stage.name}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-x-auto">
-          <div className="text-sm font-semibold text-gray-600 mb-2">
-            Instructions in Pipeline
-          </div>
-          <div className="flex gap-2">
-            {stageInstructions.map((insts, stageIdx) => (
-              <div key={stageIdx} className="flex-1 min-w-[100px]">
-                <div
-                  className={`h-10 border-2 rounded-t ${stages[stageIdx].color} flex items-center justify-center font-semibold`}>
-                  {insts.length} instr
-                </div>
-                <div className="border-2 border-t-0 rounded-b p-2 h-64 overflow-y-auto">
-                  {insts.map((inst) => (
-                    <div
-                      key={inst.indx}
-                      className="text-xs p-1 mb-1 bg-white rounded border">
-                      <div className="font-semibold">I{inst.indx}</div>
-                      <div className="text-gray-600">
-                        R{inst.dst} ← R{inst.src1}, R{inst.src2}
-                      </div>
-                    </div>
-                  ))}
-                  {insts.length === 0 && (
-                    <div className="text-gray-400 text-sm italic text-center mt-4">
-                      Empty
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-// import { useState, useEffect } from "react";
-// import Simulator from "./Simulator";
-// import "./App.css";
+import { Simulator, Instruction } from "../project/Simulator.js";
 
 function ROBTable({ rob }) {
   const getROBEntries = () => {
@@ -116,7 +10,7 @@ function ROBTable({ rob }) {
     if (!rob.empty()) {
       let i = rob.s;
       let count = 0;
-      while (true) {
+      for (; i < rob.e; ) {
         const e = rob.entries[i];
         entries.push({ index: i, entry: e });
         count++;
@@ -139,7 +33,7 @@ function ROBTable({ rob }) {
           <thead>
             <tr className="table-header">
               <th className="table-header-cell">ROB Index</th>
-              <th className="table-header-cell">Inst Index</th>
+              {/* <th className="table-header-cell">Inst Index</th> */}
               <th className="table-header-cell">Dest Reg</th>
               <th className="table-header-cell">PC</th>
               <th className="table-header-cell">Ready</th>
@@ -150,9 +44,9 @@ function ROBTable({ rob }) {
             {getROBEntries().map(({ index, entry }) => (
               <tr key={index} className="table-row">
                 <td className="table-cell monospace">{index}</td>
-                <td className="table-cell bold">
+                {/* <td className="table-cell bold">
                   {entry.inst ? `I${entry.inst.indx}` : "—"}
-                </td>
+                </td> */}
                 <td className="table-cell">R{entry.dst}</td>
                 <td className="table-cell monospace">
                   0x{entry.inst?.pc?.toString(16)?.padStart(4, "0") || "0000"}
@@ -166,11 +60,11 @@ function ROBTable({ rob }) {
                   </span>
                 </td>
                 <td className="table-cell">
-                  {index === rob.s && index === rob.e
+                  {index === rob.s && index === rob.e - 1
                     ? "Head & Tail"
                     : index === rob.s
                     ? "← Head"
-                    : index === rob.e
+                    : index === rob.e - 1
                     ? "Tail →"
                     : ""}
                 </td>
@@ -300,8 +194,8 @@ function RMTTable({ rmt }) {
             <tr className="table-header">
               <th className="table-header-cell">Architectural Register</th>
               <th className="table-header-cell">Maps to ROB Entry</th>
-              <th className="table-header-cell">Ready</th>
-              <th className="table-header-cell">Instruction</th>
+              {/* <th className="table-header-cell">Ready</th>
+              <th className="table-header-cell">Instruction</th> */}
             </tr>
           </thead>
           <tbody className="table-body">
@@ -315,7 +209,7 @@ function RMTTable({ rmt }) {
                         ? `ROB[${robEntry.dst}]`
                         : "—"}
                     </td>
-                    <td className="table-cell">
+                    {/* <td className="table-cell">
                       <span
                         className={`badge ${
                           robEntry.rdy ? "badge-ready" : "badge-not-ready"
@@ -325,7 +219,7 @@ function RMTTable({ rmt }) {
                     </td>
                     <td className="table-cell">
                       {robEntry.inst ? `I${robEntry.inst.indx}` : "—"}
-                    </td>
+                    </td> */}
                   </tr>
                 )
             )}
@@ -390,9 +284,12 @@ export default function App() {
   useEffect(() => {
     // Load sample trace
     const trace = [];
-    trace.push(new Instruction(0, 0, 1, 2, 3, 0));
-    trace.push(new Instruction(4, 0, 1, 2, 3, 1));
-    trace.push(new Instruction(8, 0, 1, 2, 3, 2));
+    // trace.push(new Instruction(0, 0, 1, 2, 3, 0));
+    // trace.push(new Instruction(4, 0, 1, 2, 3, 1));
+    // trace.push(new Instruction(8, 0, 1, 2, 3, 2));
+    trace.push(new Instruction(0, 2, 2, 3, 4, 0));
+    trace.push(new Instruction(4, 1, 5, 2, 4, 1));
+    trace.push(new Instruction(8, 1, 1, 2, 3, 2));
     sim.loadTrace(trace);
     forceUpdate((x) => x + 1);
   }, [sim]);

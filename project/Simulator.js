@@ -15,7 +15,7 @@ export class Instruction {
     }
     this.execTimer = 0;
 
-    // Renamed register pointers
+    // Renamed register references
     this.rSrc1 = null;
     this.rSrc2 = null;
     this.rDst = null;
@@ -365,6 +365,10 @@ export class Simulator {
       if (!e || !e.rdy) break;
       e.inst.rtEnd = this.cycleNo;
       e.inst.print();
+      let rmtMapping = this.rmt.getEntry(e.inst.dst);
+      if (rmtMapping === e) {
+        this.rmt.setEntry(e.inst.dst, null);
+      }
       this.rob.pop();
     }
   }
