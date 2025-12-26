@@ -201,12 +201,20 @@ class RMT {
   }
 }
 
+class ARF {
+  constructor(size = 32) {
+    this.size = size;
+    this.table = Array(size).fill(null);
+  }
+}
+
 /********************** Simulator ****************************/
 export class Simulator {
   constructor(robSize, iqSize, width) {
     this.rob = new ROB(robSize);
     this.iq = new IQ(iqSize, width);
     this.rmt = new RMT();
+    this.arf = new ARF();
     this.width = width;
 
     this.cycleNo = 0;

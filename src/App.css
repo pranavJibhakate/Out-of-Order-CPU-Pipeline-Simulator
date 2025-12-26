@@ -542,3 +542,64 @@ body {
 .stage-card {
     flex: 1 1 100px;
 } */
+
+/* Pipeline layout container */
+.pipeline-layout {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    width: 100%;
+    /* stack on small screens */
+}
+
+/* Columns */
+.pipeline-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1 1 200px;
+}
+
+.data-structures-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1 1 250px;
+}
+
+.final-state-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1 1 250px;
+}
+
+/* Optionally adjust stages grid to vertical column */
+.stages-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stage-card {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.arf-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    /* 4 columns */
+    gap: 0.25rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.arf-cell {
+    font-size: 0.75rem;
+    padding: 0.25rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    text-align: center;
+}

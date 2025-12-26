@@ -279,29 +279,40 @@ function ActiveStages({ sim }) {
 
 function ARFTable({ sim }) {
   return (
+    // <div className="component-card arf-card">
+    //   <h2 className="component-title">Architectural Register File (ARF)</h2>
+    //   <div className="table-container">
+    //     <table className="data-table">
+    //       <thead>
+    //         <tr className="table-header">
+    //           <th className="table-header-cell">Reg</th>
+    //           <th className="table-header-cell">Value</th>
+    //         </tr>
+    //       </thead>
+    //       <tbody className="table-body">
+    //         {Array.from({ length: sim.rmt.size }, (_, i) => (
+    //           <tr key={i} className="table-row">
+    //             <td className="table-cell bold">R{i}</td>
+    //             <td className="table-cell monospace">
+    //               {sim.rmt.table[i]?.inst
+    //                 ? `I${sim.rmt.table[i].inst.indx}`
+    //                 : "—"}
+    //             </td>
+    //           </tr>
+    //         ))}
+    //       </tbody>
+    //     </table>
+    //   </div>
+    // </div>
     <div className="component-card arf-card">
       <h2 className="component-title">Architectural Register File (ARF)</h2>
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr className="table-header">
-              <th className="table-header-cell">Reg</th>
-              <th className="table-header-cell">Value</th>
-            </tr>
-          </thead>
-          <tbody className="table-body">
-            {Array.from({ length: sim.rmt.size }, (_, i) => (
-              <tr key={i} className="table-row">
-                <td className="table-cell bold">R{i}</td>
-                <td className="table-cell monospace">
-                  {sim.rmt.table[i]?.inst
-                    ? `I${sim.rmt.table[i].inst.indx}`
-                    : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="arf-grid">
+        {sim.rmt.size &&
+          Array.from({ length: sim.rmt.size }).map((_, idx) => (
+            <div key={idx} className="arf-cell">
+              R{idx}: {sim.arf[idx] || 0}
+            </div>
+          ))}
       </div>
     </div>
   );
@@ -359,14 +370,11 @@ export default function App() {
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
-    // Load sample trace
-    const trace = [];
-    // trace.push(new Instruction(0, 0, 1, 2, 3, 0));
-    // trace.push(new Instruction(4, 0, 1, 2, 3, 1));
-    // trace.push(new Instruction(8, 0, 1, 2, 3, 2));
-    trace.push(new Instruction(0, 2, 2, 3, 4, 0));
-    trace.push(new Instruction(4, 1, 5, 2, 4, 1));
-    trace.push(new Instruction(8, 1, 1, 2, 3, 2));
+    const trace = [
+      new Instruction(0, 2, 2, 3, 4, 0),
+      new Instruction(4, 1, 5, 2, 4, 1),
+      new Instruction(8, 1, 1, 2, 3, 2),
+    ];
     sim.loadTrace(trace);
     forceUpdate((x) => x + 1);
   }, [sim]);
@@ -376,10 +384,7 @@ export default function App() {
     forceUpdate((x) => x + 1);
   };
 
-  const handleReset = () => {
-    sim.reset();
-  };
-
+  const handleReset = () => sim.reset();
   const runCycles = (count) => {
     for (let i = 0; i < count; i++) sim.cycle();
     forceUpdate((x) => x + 1);
@@ -388,10 +393,6 @@ export default function App() {
   return (
     <div className="simulator-app">
       <div className="simulator-container">
-        <header className="app-header">
-          {/* <h1 className="app-title">Out-of-Order Pipeline Simulator</h1> */}
-        </header>
-
         <div className="control-panel-parent">
           <div className="tab-bar">
             <button
@@ -420,6 +421,7 @@ export default function App() {
               Run 10 Cycles
             </button>
           </div>
+
           <p className="app-subtitle">
             Cycle: <span className="cycle-number">{sim.cycleNo}</span> |
             Instructions Remaining:{" "}
@@ -430,19 +432,21 @@ export default function App() {
         {activeTab === "trace" ? (
           <TraceInput sim={sim} onLoad={() => forceUpdate((x) => x + 1)} />
         ) : (
-          <>
-            <div className="pipeline-row">
+          <div className="pipeline-layout">
+            <div className="pipeline-column">
               <ActiveStages sim={sim} />
-              <div className="rob-rmt-column">
-                <RMTTable rmt={sim.rmt} />
-                <IssueQueueTable iq={sim.iq} />
-              </div>
-              <ROBTable rob={sim.rob} />
-              {/* <div className="component-card arf-card">
-                <ARFTable sim={sim} />
-              </div> */}
             </div>
-          </>
+
+            <div className="data-structures-column">
+              <RMTTable rmt={sim.rmt} />
+              <IssueQueueTable iq={sim.iq} />
+            </div>
+
+            <div className="final-state-column">
+              <ARFTable sim={sim} />
+              <ROBTable rob={sim.rob} />
+            </div>
+          </div>
         )}
       </div>
     </div>
