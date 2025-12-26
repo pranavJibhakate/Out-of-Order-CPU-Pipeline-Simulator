@@ -497,3 +497,48 @@ body {
     border-color: #3b82f6;
     color: white;
 }
+
+.pipeline-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.pipeline-row>.component-card {
+    flex: 1 1 200px;
+    min-width: 200px;
+}
+
+.rob-rmt-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.arf-card {
+    min-width: 150px;
+    flex: 1 1 150px;
+}
+
+.rob-rmt-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.stages-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+}
+
+/* .stages-grid {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.stage-card {
+    flex: 1 1 100px;
+} */

@@ -277,6 +277,36 @@ function ActiveStages({ sim }) {
   );
 }
 
+function ARFTable({ sim }) {
+  return (
+    <div className="component-card arf-card">
+      <h2 className="component-title">Architectural Register File (ARF)</h2>
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr className="table-header">
+              <th className="table-header-cell">Reg</th>
+              <th className="table-header-cell">Value</th>
+            </tr>
+          </thead>
+          <tbody className="table-body">
+            {Array.from({ length: sim.rmt.size }, (_, i) => (
+              <tr key={i} className="table-row">
+                <td className="table-cell bold">R{i}</td>
+                <td className="table-cell monospace">
+                  {sim.rmt.table[i]?.inst
+                    ? `I${sim.rmt.table[i].inst.indx}`
+                    : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function TraceInput({ sim, onLoad }) {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
@@ -401,40 +431,17 @@ export default function App() {
           <TraceInput sim={sim} onLoad={() => forceUpdate((x) => x + 1)} />
         ) : (
           <>
-            <div className="panels-grid">
+            <div className="pipeline-row">
               <ActiveStages sim={sim} />
-              <div className="panels-grid-second-col">
-                <div className="main-grid">
-                  <ROBTable rob={sim.rob} />
-                  <IssueQueueTable iq={sim.iq} />
-                </div>
+              <div className="rob-rmt-column">
                 <RMTTable rmt={sim.rmt} />
+                <IssueQueueTable iq={sim.iq} />
               </div>
+              <ROBTable rob={sim.rob} />
+              {/* <div className="component-card arf-card">
+                <ARFTable sim={sim} />
+              </div> */}
             </div>
-
-            {/* <div className="component-card config-card">
-              <h2 className="component-title">Simulator Configuration</h2>
-              <div className="config-grid">
-                <div className="config-item">
-                  <div className="config-label">ROB Size</div>
-                  <div className="config-value">{sim.rob.size} entries</div>
-                </div>
-                <div className="config-item">
-                  <div className="config-label">IQ Size</div>
-                  <div className="config-value">{sim.iq.size} entries</div>
-                </div>
-                <div className="config-item">
-                  <div className="config-label">Issue Width</div>
-                  <div className="config-value">
-                    {sim.width} instructions/cycle
-                  </div>
-                </div>
-                <div className="config-item">
-                  <div className="config-label">Architectural Registers</div>
-                  <div className="config-value">{sim.rmt.size} registers</div>
-                </div>
-              </div>
-            </div> */}
           </>
         )}
       </div>
