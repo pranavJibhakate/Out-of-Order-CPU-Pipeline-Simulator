@@ -18,7 +18,6 @@ export class Instruction {
     // IQ entry reference
     this.iqEntry = null;
 
-    // Pipeline timing (same names as C++)
     this.feBegin = this.feEnd = 0;
     this.deBegin = this.deEnd = 0;
     this.rnBegin = this.rnEnd = 0;
@@ -101,6 +100,14 @@ class ROB {
     this.isFull = false;
     return r;
   }
+  updateVal(inst) {
+    if (this.empty()) return;
+    for (let i = this.s; i <= this.e; i++) {
+      if (this.entries[i].inst.indx === inst.indx) {
+        this.entries[i].inst = inst;
+      }
+    }
+  }
 }
 
 /********************** IQ Entry ****************************/
@@ -168,6 +175,10 @@ class RMT {
   setEntry(archReg, robEntry) {
     this.table[archReg] = robEntry;
   }
+  isValid(archReg) {
+    if (archReg === -1) return false;
+    return this.table[archReg] !== null;
+  }
 }
 
 /********************** Simulator ****************************/
@@ -198,7 +209,7 @@ export class Simulator {
     this.trace = trace;
   }
 
-  fetch() {
+  loadFromTrace() {
     if (this.FEb.length) return;
     for (let i = 0; i < this.width && this.trace.length; i++) {
       const inst = this.trace.shift();
@@ -208,7 +219,7 @@ export class Simulator {
     if (this.trace.length === 0) this.emptyFile = true;
   }
 
-  decode() {
+  fetch() {
     if (!this.FEb.length || this.DEb.length) return;
     for (let i of this.FEb) i.feEnd = this.cycleNo;
     this.DEb = this.FEb;
@@ -216,39 +227,79 @@ export class Simulator {
     for (let i of this.DEb) i.deBegin = this.cycleNo;
   }
 
-  rename() {
+  decode() {
     if (!this.DEb.length || this.RNb.length) return;
-    if (this.rob.emptySize() < this.width) return;
-
     for (let i of this.DEb) i.deEnd = this.cycleNo;
-
-    for (const inst of this.DEb) {
-      const r = this.rob.getEntry();
-      r.inst = inst;
-      r.dst = inst.dst;
-      inst.rDst = r;
-      inst.rnBegin = this.cycleNo;
-
-      this.rmt.setEntry(inst.dst, r);
-
-      inst.rSrc1 = this.rmt.getEntry(inst.src1);
-      inst.rSrc2 = this.rmt.getEntry(inst.src2);
-    }
     this.RNb = this.DEb;
     this.DEb = [];
-
     for (let i of this.RNb) i.rnBegin = this.cycleNo;
   }
 
-  dispatch() {
-    this.DIb = [];
-    if (!this.RNb.length) return;
-    if (this.iq.freeSize() < this.width) return;
-    for (let i of this.RNb) i.rnEnd = this.cycleNo;
-    this.iq.insert(this.RNb);
-    this.DIb = [...this.RNb];
+  rename() {
+    if (!this.RNb.length || this.RRb.length) return;
+    if (this.rob.emptySize() < this.width) return;
+
+    for (const inst of this.RNb) inst.rnEnd = this.cycleNo;
+
+    for (const inst of this.RNb) {
+      if (inst.src1 === -1 || !this.rmt.isValid(inst.src1)) {
+        inst.rSrc1 = null;
+      } else {
+        inst.rSrc1 = this.rmt.getEntry(inst.src1);
+        inst.rSrc1.waiting.push({ inst, src: 1 });
+      }
+
+      if (inst.src2 === -1 || !this.rmt.isValid(inst.src2)) {
+        inst.rSrc2 = null;
+      } else {
+        inst.rSrc2 = this.rmt.getEntry(inst.src2);
+        inst.rSrc2.waiting.push({ inst, src: 2 });
+      }
+
+      const robEntry = this.rob.getEntry();
+      robEntry.dst = inst.dst;
+      robEntry.pc = inst.pc;
+      robEntry.rdy = false;
+      inst.rDst = robEntry;
+      robEntry.inst = inst;
+
+      if (inst.dst !== -1) {
+        this.rmt.setEntry(inst.dst, robEntry);
+      }
+    }
+
+    for (const inst of this.RNb) inst.rrBegin = this.cycleNo;
+
+    this.RRb = this.RNb;
     this.RNb = [];
-    for (let i of this.DIb) i.diEnd = this.cycleNo;
+  }
+
+  regRead() {
+    if (!this.RRb.length || this.DIb.length) return;
+
+    for (const inst of this.RRb) inst.rrEnd = this.cycleNo;
+
+    for (const inst of this.RRb) {
+      if (inst.rSrc1 && inst.rSrc1.rdy) inst.rSrc1 = null;
+      if (inst.rSrc2 && inst.rSrc2.rdy) inst.rSrc2 = null;
+    }
+
+    for (const inst of this.RRb) inst.diBegin = this.cycleNo;
+    this.DIb = this.RRb;
+    this.RRb = [];
+  }
+
+  dispatch() {
+    if (!this.DIb.length) return;
+    if (this.iq.freeSize() < this.width) return;
+
+    for (const inst of this.DIb) {
+      inst.diEnd = this.cycleNo;
+      inst.isBegin = this.cycleNo;
+    }
+
+    this.iq.insert(this.DIb);
+    this.DIb = [];
   }
 
   issue() {
@@ -272,23 +323,15 @@ export class Simulator {
     for (const inst of finished) {
       inst.exEnd = this.cycleNo;
       inst.wbBegin = this.cycleNo;
-      inst.rDst.rdy = true;
       this.WB.push(inst);
     }
   }
 
   writeBack() {
-    // for (auto inst : WB)
-    // {
-    //     inst->rDst->rdy = true;
-
-    //     inst->wbEnd = cycleNo;
-    //     inst->rtBegin = cycleNo;
-    // }
-
-    for (let i of this.WB) {
-      i.wbEnd = this.cycleNo;
-      i.rtBegin = this.cycleNo;
+    for (let inst of this.WB) {
+      inst.rtBegin = this.cycleNo;
+      inst.wbEnd = this.cycleNo;
+      inst.rDst.rdy = true;
     }
     this.WB = [];
   }
@@ -310,9 +353,11 @@ export class Simulator {
     this.execute();
     this.issue();
     this.dispatch();
+    this.regRead();
     this.rename();
     this.decode();
     this.fetch();
+    this.loadFromTrace();
     this.cycleNo++;
   }
 
@@ -321,6 +366,7 @@ export class Simulator {
       !this.emptyFile ||
       !this.rob.empty() ||
       this.execList.length !== 0 ||
+      this.FEb.length !== 0 ||
       this.DEb.length !== 0 ||
       this.RNb.length !== 0 ||
       this.RRb.length !== 0 ||
