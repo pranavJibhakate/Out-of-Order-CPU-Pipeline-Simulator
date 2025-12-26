@@ -29,6 +29,21 @@ export class Instruction {
     this.wbBegin = this.wbEnd = 0;
     this.rtBegin = this.rtEnd = 0;
   }
+
+  print() {
+    console.log(
+      `${this.indx} fu{${this.opcode}} src{${this.src1},${this.src2}} dst{${this.dst}} ` +
+        `FE{${this.feEnd - 1},1} ` +
+        `DE{${this.deBegin},${this.deEnd - this.deBegin}} ` +
+        `RN{${this.rnBegin},${this.rnEnd - this.rnBegin}} ` +
+        `RR{${this.rrBegin},${this.rrEnd - this.rrBegin}} ` +
+        `DI{${this.diBegin},${this.diEnd - this.diBegin}} ` +
+        `IS{${this.isBegin},${this.isEnd - this.isBegin}} ` +
+        `EX{${this.exBegin},${this.exEnd - this.exBegin}} ` +
+        `WB{${this.wbBegin},${this.wbEnd - this.wbBegin}} ` +
+        `RT{${this.rtBegin},${this.rtEnd - this.rtBegin}}`
+    );
+  }
 }
 
 /********************** ROB Entry ****************************/
@@ -195,14 +210,17 @@ export class Simulator {
 
   decode() {
     if (!this.FEb.length || this.DEb.length) return;
-    for (const i of this.FEb) i.feEnd = this.cycleNo;
+    for (let i of this.FEb) i.feEnd = this.cycleNo;
     this.DEb = this.FEb;
     this.FEb = [];
+    for (let i of this.DEb) i.deBegin = this.cycleNo;
   }
 
   rename() {
     if (!this.DEb.length || this.RNb.length) return;
     if (this.rob.emptySize() < this.width) return;
+
+    for (let i of this.DEb) i.deEnd = this.cycleNo;
 
     for (const inst of this.DEb) {
       const r = this.rob.getEntry();
@@ -218,21 +236,26 @@ export class Simulator {
     }
     this.RNb = this.DEb;
     this.DEb = [];
+
+    for (let i of this.RNb) i.rnBegin = this.cycleNo;
   }
 
   dispatch() {
     this.DIb = [];
     if (!this.RNb.length) return;
     if (this.iq.freeSize() < this.width) return;
+    for (let i of this.RNb) i.rnEnd = this.cycleNo;
     this.iq.insert(this.RNb);
     this.DIb = [...this.RNb];
     this.RNb = [];
+    for (let i of this.DIb) i.diEnd = this.cycleNo;
   }
 
   issue() {
     const issued = this.iq.issue();
     for (const inst of issued) {
-      inst.isBegin = this.cycleNo;
+      inst.isEnd = this.cycleNo;
+      inst.exBegin = this.cycleNo;
       this.execList.push(inst);
     }
   }
@@ -248,12 +271,25 @@ export class Simulator {
 
     for (const inst of finished) {
       inst.exEnd = this.cycleNo;
+      inst.wbBegin = this.cycleNo;
       inst.rDst.rdy = true;
       this.WB.push(inst);
     }
   }
 
   writeBack() {
+    // for (auto inst : WB)
+    // {
+    //     inst->rDst->rdy = true;
+
+    //     inst->wbEnd = cycleNo;
+    //     inst->rtBegin = cycleNo;
+    // }
+
+    for (let i of this.WB) {
+      i.wbEnd = this.cycleNo;
+      i.rtBegin = this.cycleNo;
+    }
     this.WB = [];
   }
 
@@ -262,13 +298,13 @@ export class Simulator {
       const e = this.rob.peek();
       if (!e || !e.rdy) break;
       e.inst.rtEnd = this.cycleNo;
-      console.log("inst:");
+      e.inst.print();
       this.rob.pop();
     }
   }
 
   cycle() {
-    debugger;
+    // debugger;
     this.retire();
     this.writeBack();
     this.execute();
