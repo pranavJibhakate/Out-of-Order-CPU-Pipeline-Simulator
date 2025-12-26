@@ -187,15 +187,12 @@ function IssueQueueTable({ iq }) {
 function RMTTable({ rmt }) {
   return (
     <div className="component-card rmt-card">
-      <h2 className="component-title">Register Map Table (RMT)</h2>
       <div className="table-container">
         <table className="data-table">
           <thead>
             <tr className="table-header">
-              <th className="table-header-cell">Architectural Register</th>
-              <th className="table-header-cell">Maps to ROB Entry</th>
-              {/* <th className="table-header-cell">Ready</th>
-              <th className="table-header-cell">Instruction</th> */}
+              <th className="table-header-cell">Reg</th>
+              <th className="table-header-cell"># ROB</th>
             </tr>
           </thead>
           <tbody className="table-body">
@@ -233,30 +230,51 @@ function RMTTable({ rmt }) {
           </tbody>
         </table>
       </div>
-      <div className="component-status">
+      {/* <div className="component-status">
         <div className="status-item">
           <span className="status-label">Total Registers:</span>
           <span className="status-value">{rmt.size}</span>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
 
 function ActiveStages({ sim }) {
   const stageData = [
-    { name: "Fetch", bundle: sim.FEb, count: sim.FEb.length },
-    { name: "Decode", bundle: sim.DEb, count: sim.DEb.length },
-    { name: "Rename", bundle: sim.RNb, count: sim.RNb.length },
-    { name: "Register Read", bundle: sim.RRb, count: sim.RRb.length },
-    { name: "Dispatch", bundle: sim.DIb, count: sim.DIb.length },
+    { name: "Fetch", bundle: sim.FEb, count: sim.FEb.length, dispName: "FE" },
+    { name: "Decode", bundle: sim.DEb, count: sim.DEb.length, dispName: "DE" },
+    { name: "Rename", bundle: sim.RNb, count: sim.RNb.length, dispName: "RE" },
+    {
+      name: "Register Read",
+      bundle: sim.RRb,
+      count: sim.RRb.length,
+      dispName: "RR",
+    },
+    {
+      name: "Dispatch",
+      bundle: sim.DIb,
+      count: sim.DIb.length,
+      dispName: "Di",
+    },
     {
       name: "Issue Queue",
       bundle: sim.iq.entries.map((e) => e.inst),
       count: sim.iq.entries.length,
+      dispName: "IS",
     },
-    { name: "Execute", bundle: sim.execList, count: sim.execList.length },
-    { name: "Write Back", bundle: sim.WB, count: sim.WB.length },
+    {
+      name: "Execute",
+      bundle: sim.execList,
+      count: sim.execList.length,
+      dispName: "EX",
+    },
+    {
+      name: "Write Back",
+      bundle: sim.WB,
+      count: sim.WB.length,
+      dispName: "WB",
+    },
   ];
 
   return (
@@ -265,9 +283,9 @@ function ActiveStages({ sim }) {
       <div className="stages-grid">
         {stageData.map((stage, idx) => (
           <div key={idx} className="stage-card">
-            <div className="stage-name">{stage.name}</div>
+            <div className="stage-name">{stage.dispName}</div>
             {/* <div className="stage-count">{stage.count}</div> */}
-            <div className="stage-count">
+            <div className="stage-instructions">
               {stage.bundle.map((inst) => `I${inst.indx}`).join(", ") || "None"}
             </div>
           </div>
@@ -305,7 +323,7 @@ function ARFTable({ sim }) {
     //   </div>
     // </div>
     <div className="component-card arf-card">
-      <h2 className="component-title">Architectural Register File (ARF)</h2>
+      {/* <h2 className="component-title">Architectural Register File (ARF)</h2> */}
       <div className="arf-grid">
         {sim.rmt.size &&
           Array.from({ length: sim.rmt.size }).map((_, idx) => (
@@ -432,18 +450,24 @@ export default function App() {
         {activeTab === "trace" ? (
           <TraceInput sim={sim} onLoad={() => forceUpdate((x) => x + 1)} />
         ) : (
-          <div className="pipeline-layout">
-            <div className="pipeline-column">
+          <div className="cpu-pipeline-grid">
+            <div className="area-pipeline">
               <ActiveStages sim={sim} />
             </div>
 
-            <div className="data-structures-column">
+            <div className="area-rmt">
               <RMTTable rmt={sim.rmt} />
+            </div>
+
+            <div className="area-iq">
               <IssueQueueTable iq={sim.iq} />
             </div>
 
-            <div className="final-state-column">
+            <div className="area-arf">
               <ARFTable sim={sim} />
+            </div>
+
+            <div className="area-rob">
               <ROBTable rob={sim.rob} />
             </div>
           </div>
