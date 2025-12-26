@@ -27,58 +27,57 @@ function ROBTable({ rob }) {
 
   return (
     <div className="component-card rob-card">
-      <h2 className="component-title">Reorder Buffer (ROB)</h2>
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr className="table-header">
-              <th className="table-header-cell">ROB Index</th>
-              {/* <th className="table-header-cell">Inst Index</th> */}
-              <th className="table-header-cell">Dest Reg</th>
-              <th className="table-header-cell">PC</th>
-              <th className="table-header-cell">Ready</th>
-              <th className="table-header-cell">Head/Tail</th>
-            </tr>
-          </thead>
-          <tbody className="table-body">
-            {getROBEntries().map(({ index, entry }) => (
-              <tr key={index} className="table-row">
-                <td className="table-cell monospace">{index}</td>
-                {/* <td className="table-cell bold">
-                  {entry.inst ? `I${entry.inst.indx}` : "—"}
-                </td> */}
-                <td className="table-cell">R{entry.dst}</td>
-                <td className="table-cell monospace">
-                  0x{entry.inst?.pc?.toString(16)?.padStart(4, "0") || "0000"}
-                </td>
-                <td className="table-cell">
-                  <span
-                    className={`badge ${
-                      entry.rdy ? "badge-ready" : "badge-not-ready"
-                    }`}>
-                    {entry.rdy ? "Ready" : "Not Ready"}
-                  </span>
-                </td>
-                <td className="table-cell">
-                  {index === rob.s && index === rob.e - 1
-                    ? "Head & Tail"
-                    : index === rob.s
-                    ? "← Head"
-                    : index === rob.e - 1
-                    ? "Tail →"
-                    : ""}
-                </td>
+      <div>
+        <h2 className="component-title">Reorder Buffer (ROB)</h2>
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr className="table-header">
+                <th className="table-header-cell">ROB Index</th>
+                {/* <th className="table-header-cell">Inst Index</th> */}
+                <th className="table-header-cell">Dest Reg</th>
+                <th className="table-header-cell">PC</th>
+                <th className="table-header-cell">Ready</th>
+                <th className="table-header-cell">Head/Tail</th>
               </tr>
-            ))}
-            {rob.empty() && (
-              <tr>
-                <td colSpan="6" className="table-cell empty-message">
-                  ROB is empty
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="table-body">
+              {getROBEntries().map(({ index, entry }) => (
+                <tr key={index} className="table-row">
+                  <td className="table-cell monospace">{index}</td>
+                  <td className="table-cell">R{entry.dst}</td>
+                  <td className="table-cell monospace">
+                    0x{entry.inst?.pc?.toString(16)?.padStart(4, "0") || "0000"}
+                  </td>
+                  <td className="table-cell">
+                    <span
+                      className={`badge ${
+                        entry.rdy ? "badge-success" : "badge-error"
+                      }`}>
+                      {entry.rdy ? "✓" : "✗"}
+                    </span>
+                  </td>
+                  <td className="table-cell">
+                    {index === rob.s && index === rob.e - 1
+                      ? "Head & Tail"
+                      : index === rob.s
+                      ? "← Head"
+                      : index === rob.e - 1
+                      ? "Tail →"
+                      : ""}
+                  </td>
+                </tr>
+              ))}
+              {rob.empty() && (
+                <tr>
+                  <td colSpan="6" className="table-cell empty-message">
+                    ROB is empty
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       <div className="component-status">
         <div className="status-item">
@@ -105,62 +104,64 @@ function ROBTable({ rob }) {
 function IssueQueueTable({ iq }) {
   return (
     <div className="component-card iq-card">
-      <h2 className="component-title">Issue Queue (IQ)</h2>
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr className="table-header">
-              <th className="table-header-cell">IQ Slot</th>
-              <th className="table-header-cell">Inst Index</th>
-              <th className="table-header-cell">Dest Reg</th>
-              <th className="table-header-cell">Src1 Ready</th>
-              <th className="table-header-cell">Src2 Ready</th>
-              <th className="table-header-cell">Issue Ready</th>
-            </tr>
-          </thead>
-          <tbody className="table-body">
-            {iq.entries.map((entry, index) => (
-              <tr key={index} className="table-row">
-                <td className="table-cell monospace">{index}</td>
-                <td className="table-cell bold">I{entry.inst.indx}</td>
-                <td className="table-cell">R{entry.dst}</td>
-                <td className="table-cell">
-                  <span
-                    className={`badge ${
-                      entry.rdySrc1 ? "badge-success" : "badge-error"
-                    }`}>
-                    {entry.rdySrc1 ? "✓" : "✗"}
-                  </span>
-                </td>
-                <td className="table-cell">
-                  <span
-                    className={`badge ${
-                      entry.rdySrc2 ? "badge-success" : "badge-error"
-                    }`}>
-                    {entry.rdySrc2 ? "✓" : "✗"}
-                  </span>
-                </td>
-                <td className="table-cell">
-                  <span
-                    className={`badge ${
-                      entry.rdySrc1 && entry.rdySrc2
-                        ? "badge-ready"
-                        : "badge-warning"
-                    }`}>
-                    {entry.rdySrc1 && entry.rdySrc2 ? "Ready" : "Waiting"}
-                  </span>
-                </td>
+      <div>
+        <h2 className="component-title">Issue Queue (IQ)</h2>
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr className="table-header">
+                <th className="table-header-cell">IQ Slot</th>
+                <th className="table-header-cell">Inst Index</th>
+                <th className="table-header-cell">Dest Reg</th>
+                <th className="table-header-cell">Src1 Ready</th>
+                <th className="table-header-cell">Src2 Ready</th>
+                <th className="table-header-cell">Issue Ready</th>
               </tr>
-            ))}
-            {iq.entries.length === 0 && (
-              <tr>
-                <td colSpan="6" className="table-cell empty-message">
-                  Issue Queue is empty
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="table-body">
+              {iq.entries.map((entry, index) => (
+                <tr key={index} className="table-row">
+                  <td className="table-cell monospace">{index}</td>
+                  <td className="table-cell bold">I{entry.inst.indx}</td>
+                  <td className="table-cell">R{entry.dst}</td>
+                  <td className="table-cell">
+                    <span
+                      className={`badge ${
+                        entry.rdySrc1 ? "badge-success" : "badge-error"
+                      }`}>
+                      {entry.rdySrc1 ? "✓" : "✗"}
+                    </span>
+                  </td>
+                  <td className="table-cell">
+                    <span
+                      className={`badge ${
+                        entry.rdySrc2 ? "badge-success" : "badge-error"
+                      }`}>
+                      {entry.rdySrc2 ? "✓" : "✗"}
+                    </span>
+                  </td>
+                  <td className="table-cell">
+                    <span
+                      className={`badge ${
+                        entry.rdySrc1 && entry.rdySrc2
+                          ? "badge-ready"
+                          : "badge-warning"
+                      }`}>
+                      {entry.rdySrc1 && entry.rdySrc2 ? "Ready" : "Waiting"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {iq.entries.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="table-cell empty-message">
+                    Issue Queue is empty
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       <div className="component-status">
         <div className="status-item">
@@ -284,8 +285,7 @@ function ActiveStages({ sim }) {
         {stageData.map((stage, idx) => (
           <div key={idx} className="stage-card">
             <div className="stage-name">{stage.dispName}</div>
-            {/* <div className="stage-count">{stage.count}</div> */}
-            <div className="stage-instructions">
+            <div className="stage-count">
               {stage.bundle.map((inst) => `I${inst.indx}`).join(", ") || "None"}
             </div>
           </div>
@@ -297,41 +297,45 @@ function ActiveStages({ sim }) {
 
 function ARFTable({ sim }) {
   return (
-    // <div className="component-card arf-card">
-    //   <h2 className="component-title">Architectural Register File (ARF)</h2>
-    //   <div className="table-container">
-    //     <table className="data-table">
-    //       <thead>
-    //         <tr className="table-header">
-    //           <th className="table-header-cell">Reg</th>
-    //           <th className="table-header-cell">Value</th>
-    //         </tr>
-    //       </thead>
-    //       <tbody className="table-body">
-    //         {Array.from({ length: sim.rmt.size }, (_, i) => (
-    //           <tr key={i} className="table-row">
-    //             <td className="table-cell bold">R{i}</td>
-    //             <td className="table-cell monospace">
-    //               {sim.rmt.table[i]?.inst
-    //                 ? `I${sim.rmt.table[i].inst.indx}`
-    //                 : "—"}
-    //             </td>
-    //           </tr>
-    //         ))}
-    //       </tbody>
-    //     </table>
-    //   </div>
-    // </div>
     <div className="component-card arf-card">
       {/* <h2 className="component-title">Architectural Register File (ARF)</h2> */}
-      <div className="arf-grid">
-        {sim.rmt.size &&
-          Array.from({ length: sim.rmt.size }).map((_, idx) => (
-            <div key={idx} className="arf-cell">
-              R{idx}: {sim.arf[idx] || 0}
-            </div>
-          ))}
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr className="table-header">
+              <th className="table-header-cell">Register</th>
+              <th className="table-header-cell">Value</th>
+            </tr>
+          </thead>
+
+          <tbody className="table-body">
+            {sim.arf.table
+              .map((val, idx) => ({ idx, val }))
+              .filter(({ val }) => val !== null && val !== undefined)
+              .map(({ idx, val }) => (
+                <tr key={idx} className="table-row">
+                  <td className="table-cell bold">R{idx}</td>
+                  <td className="table-cell monospace">{val}</td>
+                </tr>
+              ))}
+
+            {sim.arf.table.every((v) => v === null || v === undefined) && (
+              <tr>
+                <td colSpan="2" className="table-cell empty-message">
+                  ARF is empty
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
+
+      {/* <div className="component-status">
+        <div className="status-item">
+          <span className="status-label">Registers:</span>
+          <span className="status-value">{sim.arf.length}</span>
+        </div>
+      </div> */}
     </div>
   );
 }

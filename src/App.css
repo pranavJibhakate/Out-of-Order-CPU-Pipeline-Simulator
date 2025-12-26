@@ -122,7 +122,7 @@ body {
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    /* margin-bottom: 1.5rem; */
 }
 
 .component-title {
@@ -518,7 +518,30 @@ body {
 
 .arf-card {
     min-width: 150px;
+    height: 100%;
     flex: 1 1 150px;
+}
+
+.rmt-card {
+    min-width: 150px;
+    height: 100%;
+    flex: 1 1 150px;
+}
+
+.iq-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* align-items: end; */
+    justify-content: space-between;
+}
+
+.rob-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* align-items: end; */
+    justify-content: space-between;
 }
 
 .rob-rmt-column {
@@ -577,7 +600,7 @@ body {
 
 .arf-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(8, 1fr);
     /* 4 columns */
     gap: 0.25rem;
     max-height: 300px;
@@ -585,7 +608,7 @@ body {
 }
 
 .arf-cell {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     padding: 0.25rem;
     border: 1px solid #e5e7eb;
     border-radius: 0.25rem;
@@ -601,7 +624,7 @@ body {
     grid-template-rows: 1fr 1fr 1fr;
 
     grid-template-areas:
-        "pipeline rmt arf arf arf"
+        "pipeline rmt arf rob rob"
         "pipeline iq  iq  rob rob"
         "pipeline iq  iq  rob rob";
 
@@ -614,18 +637,22 @@ body {
 
 .area-rmt {
     grid-area: rmt;
+    min-height: 30vh;
 }
 
 .area-iq {
     grid-area: iq;
+    min-height: 50vh;
 }
 
 .area-rob {
     grid-area: rob;
+    min-height: 50vh;
 }
 
 .area-arf {
     grid-area: arf;
+    min-height: 30vh;
 }
 
 /* Styling for tables to ensure they fill their grid areas */
@@ -664,11 +691,59 @@ body {
     align-self: start;
 }
 
-/* Optional: Add the "Commit" arrow styling from ROB to ARF */
-/* .area-rob::before {
-    content: "↑";
-    display: block;
-    text-align: center;
-    font-size: 2rem;
-    margin-top: -1.5rem;
+.stages-card {
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stages-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stage-card {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+
+    background-color: #f9fafb;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.stage-card:hover {
+    background-color: #eef2ff;
+    border-color: #c7d2fe;
+}
+
+.stage-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.stage-count {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #2563eb;
+
+    text-align: left;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* overflow-x: auto;
+    white-space: nowrap; */
+}
+
+/* .stage-count:empty::after {
+    content: "—";
+    color: #9ca3af;
 } */
