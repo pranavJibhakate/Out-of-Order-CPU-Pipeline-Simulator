@@ -6,6 +6,7 @@ export class Instruction {
     this.src1 = src1;
     this.src2 = src2;
     this.indx = indx;
+    this.waiting = [];
 
     this.latency = 1;
     if (opcode === 2) {

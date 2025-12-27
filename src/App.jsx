@@ -303,7 +303,7 @@ function ARFTable({ sim }) {
         <table className="data-table">
           <thead>
             <tr className="table-header">
-              <th className="table-header-cell">Register</th>
+              <th className="table-header-cell">Reg</th>
               <th className="table-header-cell">Value</th>
             </tr>
           </thead>
@@ -329,13 +329,6 @@ function ARFTable({ sim }) {
           </tbody>
         </table>
       </div>
-
-      {/* <div className="component-status">
-        <div className="status-item">
-          <span className="status-label">Registers:</span>
-          <span className="status-value">{sim.arf.length}</span>
-        </div>
-      </div> */}
     </div>
   );
 }
@@ -349,6 +342,9 @@ function TraceInput({ sim, onLoad }) {
       const lines = text.split("\n").filter((l) => l.trim() !== "");
       const trace = lines.map((line, idx) => {
         const parts = line.trim().split(/\s+/).map(Number);
+        if (parts.length < 3) {
+          throw new Error(`Invalid format on line ${idx + 1}`);
+        }
         if (parts.length !== 5 || parts.some(isNaN)) {
           throw new Error(`Invalid format on line ${idx + 1}`);
         }
