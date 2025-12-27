@@ -28,12 +28,14 @@ Models key microarchitectural components and visualizes instruction flow across 
 pc opcode dst src1 src2
 
 Example:
+```
 0 2 2 3 4
 3 1 5 2 4
+```
 
-opcode 1 - ALU inst latency 1
-opcode 2 - ALU inst latency 3
-opcode 3 - ALU inst latency 5
+- opcode 1 - ALU inst latency 1
+- opcode 2 - ALU inst latency 3
+- opcode 3 - ALU inst latency 5
 
 ## Tech Stack
 
