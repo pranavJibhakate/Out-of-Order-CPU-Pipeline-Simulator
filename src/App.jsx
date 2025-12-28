@@ -4,6 +4,12 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import { Simulator, Instruction } from "../project/Simulator.js";
 
+const EX_UNITS = [
+  { name: "INT", opcodes: [0, 1] },
+  { name: "FP", opcodes: [2] },
+  { name: "MEM", opcodes: [3] },
+];
+
 function ROBTable({ rob }) {
   const getROBEntries = () => {
     const entries = [];
@@ -277,14 +283,51 @@ function ActiveStages({ sim }) {
     <div className="component-card stages-card">
       <h2 className="component-title">Active Pipeline Stages</h2>
       <div className="stages-grid">
-        {stageData.map((stage, idx) => (
+        {/* {stageData.map((stage, idx) => (
           <div key={idx} className="stage-card">
             <div className="stage-name">{stage.dispName}</div>
             <div className="stage-count">
               {stage.bundle.map((inst) => `I${inst.indx}`).join(", ") || "None"}
             </div>
           </div>
-        ))}
+        ))}{" "} */}
+        {stageData.map((stage, idx) => {
+          if (stage.dispName === "EX") {
+            const groups = EX_UNITS.map((unit) => ({
+              name: unit.name,
+              insts: stage.bundle.filter((inst) =>
+                unit.opcodes.includes(inst.opcode)
+              ),
+            }));
+
+            return (
+              <div key={idx} className="stage-card ex-stage">
+                <div className="ex-subgrid">
+                  {groups.map((g) => (
+                    <div key={g.name} className="ex-subbox">
+                      <div className="ex-title">{g.name}</div>
+                      <div className="stage-count">
+                        {g.insts.length
+                          ? g.insts.map((inst) => `I${inst.indx}`).join(", ")
+                          : "None"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div key={idx} className="stage-card">
+              <div className="stage-name">{stage.dispName}</div>
+              <div className="stage-count">
+                {stage.bundle.map((inst) => `I${inst.indx}`).join(", ") ||
+                  "None"}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

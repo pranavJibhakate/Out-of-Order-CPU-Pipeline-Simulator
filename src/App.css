@@ -768,3 +768,29 @@ body {
     font-size: 0.9rem;
     border: none;
 }
+
+.ex-stage {
+    /* grid-column: span 2; */
+    /* optional: make EX wider */
+}
+
+.ex-subgrid {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.ex-subbox {
+    flex: 1;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 4px;
+    background-color: #f9fafb;
+}
+
+.ex-title {
+    font-size: 0.7rem;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 2px;
+}
