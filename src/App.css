@@ -738,12 +738,33 @@ body {
 
     text-align: left;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
-    /* overflow-x: auto;
-    white-space: nowrap; */
 }
 
-/* .stage-count:empty::after {
-    content: "—";
+.config-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.config-row label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    /* color: #cfd8dc; */
+    /* color: #9ca3af;
+    color: black; */
     color: #9ca3af;
-} */
+    gap: 4px;
+}
+
+.config-row input {
+    width: 80px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background-color: #3b82f6;
+    color: white;
+    font-size: 0.9rem;
+    border: none;
+}

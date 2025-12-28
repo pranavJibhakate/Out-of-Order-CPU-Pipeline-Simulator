@@ -9,19 +9,14 @@ function ROBTable({ rob }) {
     const entries = [];
     if (!rob.empty()) {
       let i = rob.s;
-      let count = 0;
-      for (; i < rob.e; ) {
-        const e = rob.entries[i];
-        entries.push({ index: i, entry: e });
-        count++;
+      let count = rob.isFull ? rob.size : (rob.e - rob.s + rob.size) % rob.size;
 
-        if (i === rob.e && !rob.isFull) break;
-        if (rob.isFull && count >= rob.size) break;
-
+      for (let k = 0; k < count; k++) {
+        entries.push({ index: i, entry: rob.entries[i] });
         i = (i + 1) % rob.size;
-        if (rob.isFull && i === rob.e) break;
       }
     }
+
     return entries;
   };
 
@@ -333,18 +328,19 @@ function ARFTable({ sim }) {
   );
 }
 
-function TraceInput({ sim, onLoad }) {
+function TraceInput({ onLoad }) {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
+
+  const [robSize, setRobSize] = useState(8);
+  const [iqSize, setIqSize] = useState(8);
+  const [width, setWidth] = useState(1);
 
   const parseAndLoad = () => {
     try {
       const lines = text.split("\n").filter((l) => l.trim() !== "");
       const trace = lines.map((line, idx) => {
         const parts = line.trim().split(/\s+/).map(Number);
-        if (parts.length < 3) {
-          throw new Error(`Invalid format on line ${idx + 1}`);
-        }
         if (parts.length !== 5 || parts.some(isNaN)) {
           throw new Error(`Invalid format on line ${idx + 1}`);
         }
@@ -352,9 +348,13 @@ function TraceInput({ sim, onLoad }) {
         return new Instruction(pc, opcode, dst, src1, src2, idx);
       });
 
-      sim.reset();
-      sim.loadTrace(trace);
-      onLoad();
+      onLoad({
+        trace,
+        robSize,
+        iqSize,
+        width,
+      });
+
       setError("");
     } catch (e) {
       setError(e.message);
@@ -364,6 +364,38 @@ function TraceInput({ sim, onLoad }) {
   return (
     <div className="component-card trace-card">
       <h2 className="component-title">Trace Input</h2>
+
+      <div className="config-row">
+        <label>
+          ROB Size
+          <input
+            type="number"
+            value={robSize}
+            min={1}
+            onChange={(e) => setRobSize(+e.target.value)}
+          />
+        </label>
+
+        <label>
+          IQ Size
+          <input
+            type="number"
+            value={iqSize}
+            min={1}
+            onChange={(e) => setIqSize(+e.target.value)}
+          />
+        </label>
+
+        <label>
+          Width
+          <input
+            type="number"
+            value={width}
+            min={1}
+            onChange={(e) => setWidth(+e.target.value)}
+          />
+        </label>
+      </div>
 
       <textarea
         className="trace-textarea"
@@ -382,27 +414,47 @@ function TraceInput({ sim, onLoad }) {
   );
 }
 
+const DEFAULT_TRACE = [
+  [0, 2, 2, 3, 4],
+  [4, 1, 5, 2, 4],
+  [8, 1, 1, 2, 3],
+];
+
+function buildTrace(raw) {
+  return raw.map(
+    ([pc, opcode, dst, src1, src2], idx) =>
+      new Instruction(pc, opcode, dst, src1, src2, idx)
+  );
+}
+
 export default function App() {
-  const [sim] = useState(() => new Simulator(8, 8, 1));
+  const [sim, setSim] = useState(() => {
+    const s = new Simulator(8, 8, 1);
+    s.loadTrace(buildTrace(DEFAULT_TRACE));
+    return s;
+  });
   const [activeTab, setActiveTab] = useState("sim");
   const [, forceUpdate] = useState(0);
 
-  useEffect(() => {
-    const trace = [
-      new Instruction(0, 2, 2, 3, 4, 0),
-      new Instruction(4, 1, 5, 2, 4, 1),
-      new Instruction(8, 1, 1, 2, 3, 2),
-    ];
-    sim.loadTrace(trace);
+  const handleLoad = ({ trace, robSize, iqSize, width }) => {
+    const newSim = new Simulator(robSize, iqSize, width);
+    newSim.loadTrace(trace);
+    setSim(newSim);
     forceUpdate((x) => x + 1);
-  }, [sim]);
+  };
 
   const handleCycle = () => {
     sim.cycle();
     forceUpdate((x) => x + 1);
   };
 
-  const handleReset = () => sim.reset();
+  const handleReset = () => {
+    const newSim = new Simulator(sim.rob.size, sim.iq.size, sim.width);
+    newSim.loadTrace(buildTrace(DEFAULT_TRACE));
+    setSim(newSim);
+    forceUpdate((x) => x + 1);
+  };
+
   const runCycles = (count) => {
     for (let i = 0; i < count; i++) sim.cycle();
     forceUpdate((x) => x + 1);
@@ -448,25 +500,21 @@ export default function App() {
         </div>
 
         {activeTab === "trace" ? (
-          <TraceInput sim={sim} onLoad={() => forceUpdate((x) => x + 1)} />
+          <TraceInput onLoad={handleLoad} />
         ) : (
           <div className="cpu-pipeline-grid">
             <div className="area-pipeline">
               <ActiveStages sim={sim} />
             </div>
-
             <div className="area-rmt">
               <RMTTable rmt={sim.rmt} />
             </div>
-
             <div className="area-iq">
               <IssueQueueTable iq={sim.iq} />
             </div>
-
             <div className="area-arf">
               <ARFTable sim={sim} />
             </div>
-
             <div className="area-rob">
               <ROBTable rob={sim.rob} />
             </div>
